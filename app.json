@@ -1,0 +1,8 @@
+{
+  "name": "draw together",
+  "description": "A fun multiplayer game based on your drawing and guessin skills",
+  "repository": "https://github.com/markus9797/draw_together",
+  "logo": "https://cdn.rawgit.com/heroku/node-js-getting-started/master/public/node.svg",
+  "keywords": ["node", "express", "heroku"],
+  "image": "heroku/nodejs"
+}
