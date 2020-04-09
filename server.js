@@ -15,9 +15,11 @@ io.sockets.on('connection', newConnection);
 function newConnection(socket) {
 
     users.push(socket);
-    socket.emit('load', ellipses);
 
-    console.log("sending load data...", ellipses);
+    socket.on('load', ()=>{
+        console.log("sending load data...", ellipses);
+        socket.emit('load', ellipses);
+    });
 
     socket.on('mouse', (data)=>{
         socket.broadcast.emit('mouse', data);
