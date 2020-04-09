@@ -6,6 +6,9 @@
   "engines": {
     "node": "10.16.x"
   },
+  "scripts": {
+    "start": "node server.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/markus9797/draw_together.git"
