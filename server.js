@@ -17,6 +17,8 @@ function newConnection(socket) {
     users.push(socket);
     socket.emit('load', ellipses);
 
+    console.log("sending load data...", ellipses);
+
     socket.on('mouse', (data)=>{
         socket.broadcast.emit('mouse', data);
         ellipses.push(data);
