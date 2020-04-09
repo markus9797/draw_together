@@ -21,6 +21,10 @@ function newConnection(socket) {
         socket.emit('loaded', ellipses);
     });
 
+    socket.on('delete', ()=>{
+        ellipses = [];
+    });
+
     socket.on('mouse', (data)=>{
         socket.broadcast.emit('mouse', data);
         ellipses.push(data);
