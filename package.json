@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "a spin-off of the popular browser game skribbl.io",
   "main": "index.js",
-  "scripts": {},
+  "engines": {
+    "node": "10.16.x"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/markus9797/draw_together.git"
