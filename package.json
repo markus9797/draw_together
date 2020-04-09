@@ -1,0 +1,22 @@
+{
+  "name": "draw_together",
+  "version": "1.0.0",
+  "description": "a spin-off of the popular browser game skribbl.io",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markus9797/draw_together.git"
+  },
+  "author": "Markus Huber",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/markus9797/draw_together/issues"
+  },
+  "homepage": "https://github.com/markus9797/draw_together#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^2.3.0",
+    "socket.io-client": "^2.3.0"
+  }
+}
