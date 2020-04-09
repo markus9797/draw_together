@@ -18,7 +18,7 @@ function newConnection(socket) {
 
     socket.on('load', ()=>{
         console.log("sending load data...", ellipses);
-        socket.emit('load', ellipses);
+        socket.broadcast.to(socket.id).emit('loaded', ellipses);
     });
 
     socket.on('mouse', (data)=>{
