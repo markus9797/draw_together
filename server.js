@@ -38,6 +38,12 @@ function newConnection(socket) {
 
     socket.on('load', ()=>{
         socket.emit('loaded', lines);
+        let user_names = [];
+        for (let u in users){
+            user_names.push(users[u].username);
+            console.log(users[u].username);
+        }
+        socket.emit('loadedUsers', user_names);
     });
 
     socket.on('delete', ()=>{
