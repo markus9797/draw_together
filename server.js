@@ -20,7 +20,7 @@ let Game = {
     host: null,
     rounds: 5,
     drawer: 0,
-    maxTime: 5,
+    maxTime: 30,
     wordlist: [
         {
             word: 'amgelo',
@@ -54,22 +54,34 @@ function newConnection(socket) {
         Game.host = users[0]; //todo: get host from emit data
         Game.socket = socket;
         Game.sockets = io.sockets;
+        Game.players = users;
         socket.broadcast.emit('gameCreated');
         //create new game instance
         current_game = new drawGame(Game);
         let words = current_game.wordPicker();
+
         socket.emit('pickWords', words);
+        io.sockets.emit('loadedDrawer', users[current_game.current_player].username);
+
     });
 
 
     socket.on('pickWord', function(word) {
         console.log("current word: ", word.word);
         current_game.wordPicked(word);
+        let data = {
+            author: word.author,
+            category: word.category,
+            length: word.word.length,
+            time: current_game.maxTime
+        };
+        console.log("emitting setWord", data);;
+        socket.emit('drawTimer', current_game.maxTime);
     });
 
 
     socket.on('sendMsg', function(message) {
-       Game.chat.push(message);
+       current_game.chat.push(message);
 
         socket.broadcast.emit('getMsg', message);
     });
@@ -94,7 +106,10 @@ function newConnection(socket) {
     });
 
     socket.on('load', ()=>{
-        socket.emit('loaded', Game.lines);
+        if(current_game === null)
+            return;
+
+        socket.emit('loaded', current_game.lines);
 
         let user_names = [];
         for (let u in users){
@@ -102,27 +117,22 @@ function newConnection(socket) {
             console.log(users[u].username);
         }
         socket.emit('loadedUsers', user_names);
-        socket.emit('loadedChat', Game.chat);
+        socket.emit('loadedChat', current_game.chat);
 
-        let i = users.indexOf(socket);
-        if (i === Game.drawer) {
-            socket.emit('setDrawer');
-        }
-
-        socket.emit('loadedDrawer', users[Game.drawer].username);
+        socket.emit('loadedDrawer', users[current_game.current_player].username);
 
     });
 
     socket.on('delete', ()=>{
-        Game.lines = [];
+        current_game.lines = [];
         socket.broadcast.emit('deleted');
     });
 
     socket.on('mouse', (data)=>{
         let i = users.indexOf(socket);
-        if (i === Game.drawer) {
+        if (i === current_game.current_player) {
             socket.broadcast.emit('mouse', data);
-            Game.lines.push(data);
+            current_game.lines.push(data);
         }
         else {
             socket.emit('notAllowed');

@@ -7,13 +7,16 @@ class drawGame {
         this.timeLeft = init.maxTime;
         this.current_round = 0;
         this.current_player = 0;
-        this.total_players = 5; //todo: laod from init
+        // this.total_players = 5; //todo: laod from init
         this.time_out = false;
         this.finished = false;
         this.rounds = init.rounds;
         this.current_word = null;
         this.socket = init.socket;
         this.sockets = init.sockets;
+        this.lines = [];
+        this.chat = [];
+        this.players = init.players;
     }
 
     time_clock(){
@@ -25,25 +28,34 @@ class drawGame {
             if (this.timeLeft === 0){
                 clearInterval(countdown);
 
-                if (this.current_player +1 > this.total_players){
+                let total_players = this.players.length;
+
+                console.log(this.current_player +1, " > ", total_players);
+
+                if (this.current_player +1 >= total_players){
                     if (this.current_round +1 > this.rounds){
                         this.finished = true;
                     }
                     else{
                         this.current_round ++;
+                        this.current_player = 0;
                     }
                 }
 
-                const data = {
-                    finished: this.finished,
-                    current_player: this.current_player,
-                    current_round: this.current_round
-                };
+                else{
+                    this.current_player ++;
+                }
 
 
-                console.log("emitting ", this.socket, data);
 
-                this.sockets.emit("timeout", data);
+                this.timeLeft = this.maxTime;
+
+                this.sockets.emit("loadedDrawer", null);
+                this.sockets.emit("timeout");
+                this.sockets.emit("deleted");
+
+                let words = this.wordPicker();
+                this.players[this.current_player].emit('pickWords', words);
 
                 this.time_out = true;
                 setTimeout(()=>{
@@ -56,7 +68,15 @@ class drawGame {
 
     wordPicked(word){
         this.current_word = word;
-        return this.time_clock();
+        this.sockets.emit("loadedDrawer", this.players[this.current_player].username);
+        const data = {
+            word_length: word.word.length,
+            time: this.maxTime
+        };
+        console.log("emitting ", data);
+        this.sockets.emit('setWord', data);
+
+        this.time_clock();
     }
 
     wordPicker(){
