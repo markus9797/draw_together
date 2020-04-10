@@ -18,17 +18,22 @@ function newConnection(socket) {
     users.push(socket);
 
     socket.on('disconnect', function() {
-        console.log('Got disconnect!');
-        const username = users[socket].username;
         let i = users.indexOf(socket);
+        const username = users[i].username;
         users.splice(i, 1);
+
+        console.log('Got disconnect! ', username);
 
         socket.broadcast.emit('removeUser', username);
     });
 
-    socket.on('join', (username)=>{
-        users[socket].username = username;
-        socket.broadcast.emit('addUser', username)
+    socket.on('join', (data)=>{
+
+        console.log('got connect! ', data.username);
+
+        let i = users.indexOf(socket);
+        users[i].username = data.username;
+        socket.broadcast.emit('addUser', data.username);
     });
 
     socket.on('load', ()=>{
