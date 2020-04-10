@@ -10,12 +10,19 @@ let users = []; // connected users
 let lines = []; // store the current painting
 
 let Players = [];
+let Chat = [];
 
 io.sockets.on('connection', newConnection);
 
 function newConnection(socket) {
 
     users.push(socket);
+
+    socket.on('sendMsg', function(message) {
+       Chat.push(message);
+
+        socket.broadcast.emit('getMsg', message);
+    });
 
     socket.on('disconnect', function() {
         let i = users.indexOf(socket);
@@ -44,6 +51,7 @@ function newConnection(socket) {
             console.log(users[u].username);
         }
         socket.emit('loadedUsers', user_names);
+        socket.emit('loadedChat', Chat);
     });
 
     socket.on('delete', ()=>{
