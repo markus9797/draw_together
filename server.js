@@ -3,6 +3,8 @@ const socket = require('socket.io');
 
 const {drawGame} = require('./drawGame');
 
+require('dotenv').config(); // todo: remove in production
+
 const app = express();  // init server
 const server = app.listen(process.env.PORT || 3000 );  // run server
 
@@ -12,6 +14,7 @@ let users = []; // connected users
 let lines = []; // store the current painting
 
 let Chat = [];
+
 
 let Game = {
     started: false,
@@ -23,14 +26,14 @@ let Game = {
     maxTime: 30,
     wordlist: [
         {
-            word: 'amgelo',
+            word: 'hippogreif',
             category: 'funny',
-            author: 'Markus'
+            author: 'Julia'
         },
         {
             word: 'himbeere',
             category: 'normal',
-            author: 'Herbert'
+            author: 'Markus'
         },
         {
             word: 'bärtierchen',
@@ -47,15 +50,29 @@ io.sockets.on('connection', newConnection);
 
 function newConnection(socket) {
 
-    users.push(socket);
+    // users.push(socket);
 
     socket.on('createGame', function() {
         Game.started = true;
-        Game.host = users[0]; //todo: get host from emit data
+        // put player who started on pos 1 (host);
+        let i = users.indexOf(socket);
+        let temp = users[i];
+        users[i] = users[0];
+        users[0] = temp;
+
+        console.log(users[i].username, "Starting new Game with host: ", users[0].username, " \n Total players: ", users.length);
+
+        Game.host = users[0];
         Game.socket = socket;
         Game.sockets = io.sockets;
         Game.players = users;
-        socket.broadcast.emit('gameCreated');
+
+        // set first drawer to the person who started the game (todo: order array new)
+        Game.drawer = users.indexOf(socket);
+
+        // notify everbody the game has started
+        io.sockets.emit('lobby', false);
+
         //create new game instance
         current_game = new drawGame(Game);
         let words = current_game.wordPicker();
@@ -75,51 +92,52 @@ function newConnection(socket) {
             length: word.word.length,
             time: current_game.maxTime
         };
-        console.log("emitting setWord", data);;
         socket.emit('drawTimer', current_game.maxTime);
     });
 
 
     socket.on('sendMsg', function(message) {
        current_game.chat.push(message);
-
-        socket.broadcast.emit('getMsg', message);
+       current_game.guess(users[users.indexOf(socket)], message.text);
     });
 
     socket.on('disconnect', function() {
         let i = users.indexOf(socket);
-        const username = users[i].username;
-        users.splice(i, 1);
-
-        console.log('Got disconnect! ', username);
-
-        socket.broadcast.emit('removeUser', username);
+        if (i !== -1) {
+            const username = users[i].username;
+            users.splice(i, 1);
+            console.log('Got disconnect! ', username);
+            socket.broadcast.emit('removeUser', username);
+        }
     });
 
     socket.on('join', (data)=>{
 
+        users.push(socket);
         console.log('got connect! ', data.username);
-
         let i = users.indexOf(socket);
         users[i].username = data.username;
         socket.broadcast.emit('addUser', data.username);
     });
 
     socket.on('load', ()=>{
-        if(current_game === null)
-            return;
+        if(current_game !== null) {
+            socket.emit('loaded', current_game.lines);
+            socket.emit('loadedChat', current_game.chat);
+            socket.emit('loadedDrawer', users[current_game.current_player].username);
+            socket.emit('loadedScores', current_game.scores);
+            socket.emit('lobby', false);
+        }
 
-        socket.emit('loaded', current_game.lines);
+        else{
+            socket.emit('lobby', true);
+        }
 
         let user_names = [];
         for (let u in users){
             user_names.push(users[u].username);
-            console.log(users[u].username);
         }
         socket.emit('loadedUsers', user_names);
-        socket.emit('loadedChat', current_game.chat);
-
-        socket.emit('loadedDrawer', users[current_game.current_player].username);
 
     });
 
