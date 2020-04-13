@@ -3,7 +3,7 @@ const socket = require('socket.io');
 
 const {drawGame} = require('./drawGame');
 
-require('dotenv').config(); // todo: remove in production
+//require('dotenv').config(); // todo: remove in production
 
 const app = express();  // init server
 const server = app.listen(process.env.PORT || 3000 );  // run server
@@ -23,7 +23,7 @@ let Game = {
     host: null,
     rounds: 5,
     drawer: 0,
-    maxTime: 30,
+    maxTime: 60,
     wordlist: [
         {
             word: 'hippogreif',
@@ -52,7 +52,7 @@ function newConnection(socket) {
 
     // users.push(socket);
 
-    socket.on('createGame', function() {
+    socket.on('createGame', function(maxtime = 60) {
         Game.started = true;
         // put player who started on pos 1 (host);
         let i = users.indexOf(socket);
