@@ -30,7 +30,7 @@ class drawGame {
                      FROM skribbl, sk_author as author
                      where skribbl.author = author.ID`, function (error, results, fields) {
             if (error)
-                throw error;
+                console.log("Could not connect to database.")
             let wordlist_new = [];
             results.forEach(result => {
                 let data = {
