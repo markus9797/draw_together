@@ -3,7 +3,7 @@ const socket = require('socket.io');
 
 const {drawGame} = require('./drawGame');
 
-//require('dotenv').config(); // todo: remove in production
+require('dotenv').config(); // todo: remove in production
 
 const app = express();  // init server
 const server = app.listen(process.env.PORT || 3000 );  // run server
@@ -79,9 +79,13 @@ function newConnection(socket) {
 
         socket.emit('pickWords', words);
         io.sockets.emit('loadedDrawer', users[current_game.current_player].username);
-
     });
 
+    socket.on('stopGame', function(){
+        io.sockets.emit('gameStopped');
+        users = [];
+        current_game = null;
+    });
 
     socket.on('pickWord', function(word) {
         console.log("current word: ", word.word);
@@ -146,14 +150,18 @@ function newConnection(socket) {
         socket.broadcast.emit('deleted');
     });
 
-    socket.on('mouse', (data)=>{
+    socket.on('mouse', (data)=> {
         let i = users.indexOf(socket);
-        if (i === current_game.current_player) {
-            socket.broadcast.emit('mouse', data);
-            current_game.lines.push(data);
-        }
-        else {
-            socket.emit('notAllowed');
+        try {
+            if (i === current_game.current_player) {
+                socket.broadcast.emit('mouse', data);
+                current_game.lines.push(data);
+            }
+            else {
+                socket.emit('notAllowed');
+            }
+        } catch (e) {
+            console.log(e);
         }
     });
 }
