@@ -120,7 +120,6 @@ class drawGame {
     }
 
     wordPicker(){
-        console.log("picking from ", this.wordlist);
         let max = this.wordlist.length;
         let random = this.getRandomInt(max);
 
