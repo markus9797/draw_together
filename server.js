@@ -3,7 +3,7 @@ const socket = require('socket.io');
 
 const {drawGame} = require('./drawGame');
 
-//require('dotenv').config(); // todo: remove in production
+require('dotenv').config(); // todo: remove in production
 
 const app = express();  // init server
 const server = app.listen(process.env.PORT || 3000 );  // run server

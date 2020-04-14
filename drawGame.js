@@ -29,8 +29,11 @@ class drawGame {
         con.query(`SELECT sk_begriff, category, author.name 
                      FROM skribbl, sk_author as author
                      where skribbl.author = author.ID`, function (error, results, fields) {
-            if (error)
-                console.log("Could not connect to database.")
+            if (error) {
+                console.log("Could not connect to database.");
+                console.log(error);
+                return -1;
+            }
             let wordlist_new = [];
             results.forEach(result => {
                 let data = {
@@ -53,7 +56,7 @@ class drawGame {
             database : process.env.db_table
         });
         this.loadDB(con, (words)=>{
-            console.log ("LOADED WORDS");
+            console.log ("LOADED WORDS from db");
             this.wordlist = words;
         })
     }
@@ -157,7 +160,7 @@ class drawGame {
                 return;
             }
 
-            if (text === this.current_word.word) {
+            if (text.toLowerCase() === this.current_word.word.toLowerCase()) {
                 this.correct_guess(player);
             } else {
                 let message = {
