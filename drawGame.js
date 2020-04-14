@@ -114,9 +114,16 @@ class drawGame {
     wordPicked(word){
         this.current_word = word;
         this.sockets.emit("loadedDrawer", this.players[this.current_player].username);
+        let spaces = [];
+        for (let i=0; i++; i <word.word.length){
+            if (word.word.charAt(i) === ' '){
+                spaces.push(i);
+            }
+        }
         const data = {
             word_length: word.word.length,
-            time: this.maxTime
+            time: this.maxTime,
+            spaces: spaces
         };
         this.sockets.emit('setWord', data);
 
