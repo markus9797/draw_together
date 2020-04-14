@@ -58,6 +58,7 @@ class drawGame {
         this.loadDB(con, (words)=>{
             console.log ("LOADED WORDS from db");
             this.wordlist = words;
+            con.end();
         })
     }
 
