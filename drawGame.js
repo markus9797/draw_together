@@ -115,7 +115,7 @@ class drawGame {
         this.current_word = word;
         this.sockets.emit("loadedDrawer", this.players[this.current_player].username);
         let spaces = [];
-        for (let i=0; i++; i < word.word.length){
+        for (let i=0; i < word.word.length; i++){
             if (word.word.charAt(i) === ' '){
                 spaces.push(i);
             }
