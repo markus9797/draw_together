@@ -81,6 +81,11 @@ class drawGame {
 
     round_over(){
         clearInterval(this.countdown);
+        const message = {
+            author: "Server",
+            text: "Das Wort war " + word.word + ".!!!!! nice!"
+        };
+        this.sockets.emit("getMsg", message);
         this.sockets.emit("nextRound");
         this.lines = []; //clear game lines - important for undo
 
