@@ -3,7 +3,7 @@ const socket = require('socket.io');
 
 const {drawGame} = require('./drawGame');
 
-require('dotenv').config(); // todo: remove in production
+//require('dotenv').config(); // todo: remove in production
 
 const app = express();  // init server
 const server = app.listen(process.env.PORT || 3000 );  // run server
@@ -149,6 +149,13 @@ function newConnection(socket) {
         current_game.lines = [];
         socket.broadcast.emit('deleted');
     });
+
+    socket.on('undo', ()=>{
+        current_game.lines.pop();
+        socket.broadcast.emit('deleted');
+        socket.broadcast.emit('loaded', current_game.lines);
+    });
+
 
     socket.on('mouse', (data)=> {
         let i = users.indexOf(socket);
