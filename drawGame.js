@@ -82,6 +82,7 @@ class drawGame {
     round_over(){
         clearInterval(this.countdown);
         this.sockets.emit("nextRound");
+        this.lines = []; //clear game lines - important for undo
 
         let total_players = this.players.length;
 
