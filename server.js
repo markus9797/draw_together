@@ -151,7 +151,16 @@ function newConnection(socket) {
     });
 
     socket.on('undo', ()=>{
-        current_game.lines.pop();
+        let distance = 0;
+        let threshhold = 200;
+
+        while (distance < threshhold){
+            let line = current_game.lines.pop();
+            let dx = line.x - line.px;
+            let dy = line.y - line.py;
+            distance += Math.hypot(dx, dy);
+        }
+
         socket.broadcast.emit('deleted');
         socket.broadcast.emit('loaded', current_game.lines);
     });
