@@ -87,12 +87,14 @@ class drawGame {
         let total_players = this.players.length;
 
         if (this.current_player +1 >= total_players){
-            if (this.current_round +1 > this.rounds){
+            if (this.current_round > this.rounds){
                 this.finished = true;
+                this.sockets.emit("finished"); //todo: send ranking data + call destructor
             }
             else{
                 this.current_round ++;
                 this.current_player = 0;
+                this.sockets.emit("setRound", this.current_round +1);
             }
         }
 
@@ -124,9 +126,16 @@ class drawGame {
         const data = {
             word_length: word.word.length,
             time: this.maxTime,
-            spaces: spaces
+            spaces: spaces,
+            category: word.category,
+            author: word.author
         };
-        console.log("Spaces", spaces);
+
+        const message = {
+            author: "Server",
+            text: "Es wurde ein Wort von " + word.author + " der Kategorie " + word.category + " gewählt.!"
+        }
+        this.sockets.emit("getMsg", message);
         this.sockets.emit('setWord', data);
 
         this.time_clock();

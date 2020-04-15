@@ -31,7 +31,7 @@ let Game = {
             author: 'Julia'
         },
         {
-            word: 'himbeere',
+            word: 'eine ameise',
             category: 'normal',
             author: 'Markus'
         },
@@ -52,7 +52,7 @@ function newConnection(socket) {
 
     // users.push(socket);
 
-    socket.on('createGame', function(maxtime = 60) {
+    socket.on('createGame', function(max_time = 100) {
         Game.started = true;
         // put player who started on pos 1 (host);
         let i = users.indexOf(socket);
@@ -66,6 +66,7 @@ function newConnection(socket) {
         Game.socket = socket;
         Game.sockets = io.sockets;
         Game.players = users;
+        Game.maxTime = max_time;
 
         // set first drawer to the person who started the game (todo: order array new)
         Game.drawer = users.indexOf(socket);
@@ -130,6 +131,14 @@ function newConnection(socket) {
             socket.emit('loadedChat', current_game.chat);
             socket.emit('loadedDrawer', users[current_game.current_player].username);
             socket.emit('loadedScores', current_game.scores);
+
+            let data = {
+                rounds: current_game.rounds,
+                max_time:  current_game.maxTime
+
+            };
+            socket.emit('loadedSetup', data);
+
             socket.emit('lobby', false);
         }
 
@@ -154,7 +163,7 @@ function newConnection(socket) {
         let distance = 0;
         let threshhold = 200;
 
-        while (distance < threshhold){
+        while (distance < threshhold && current_game.lines.length > 0){
             let line = current_game.lines.pop();
             let dx = line.x - line.px;
             let dy = line.y - line.py;
