@@ -23,6 +23,8 @@ class drawGame {
         this.initScores();
         this.initWordlist();
         this.countdown = null;
+        this.disconnects = [];
+        this.done = false;
     }
 
     loadDB(con, callback){
@@ -72,43 +74,59 @@ class drawGame {
     time_clock(){
         this.countdown = setInterval(()=>{
             this.timeLeft -=1;
+            console.log("Time left: ", this.timeLeft);
 
             if (this.timeLeft === 0){
+                this.tell_word();
                 this.round_over(this.countdown);
             }
         }, 1000);
     }
 
-    round_over(){
-        clearInterval(this.countdown);
+    tell_word(){
         const message = {
             author: "Server",
-            text: "Das Wort war " + word.word + ".!!!!! nice!"
+            text: "Das Wort war " + this.current_word.word + "!",
+            color: 'yellow'
         };
         this.sockets.emit("getMsg", message);
+    }
+
+    round_over(){
+        clearInterval(this.countdown);
+
         this.sockets.emit("nextRound");
         this.lines = []; //clear game lines - important for undo
 
         let total_players = this.players.length;
 
-        if (this.current_player +1 >= total_players){
-            if (this.current_round > this.rounds){
-                this.finished = true;
-                this.sockets.emit("finished"); //todo: send ranking data + call destructor
-            }
-            else{
-                this.current_round ++;
-                this.current_player = 0;
-                this.sockets.emit("setRound", this.current_round +1);
-            }
-        }
-
-        else{
+        let done = false;
+        do { //skipping d'ced players
+            console.log("Skipping ", this.players[this.current_player].username);
             this.current_player ++;
-        }
+
+            if (this.current_player >= total_players){
+                if (this.current_round > this.rounds){
+                    this.finished = true;
+                    done = true;
+                    this.gameOver();
+                }
+                else{
+                    this.current_round ++;
+                    this.current_player = 0;
+                    this.sockets.emit("setRound", this.current_round +1);
+                }
+            }
+
+        } while (this.disconnects.includes(this.current_player) && !done);
+
+        if(done)
+            return 0;
 
         this.timeLeft = this.maxTime;
         this.correct_guesses = 0;
+
+        console.log("Current Turn: ", this.players[this.current_player].username);
 
         this.sockets.emit("loadedDrawer", null);
         this.sockets.emit("timeout");
@@ -138,8 +156,9 @@ class drawGame {
 
         const message = {
             author: "Server",
-            text: "Es wurde ein Wort von " + word.author + " der Kategorie " + word.category + " gewählt.!"
-        }
+            text: "Es wurde ein Wort von " + word.author + " der Kategorie " + word.category + " gewählt.!",
+            color: 'blue'
+        };
         this.sockets.emit("getMsg", message);
         this.sockets.emit('setWord', data);
 
@@ -215,7 +234,7 @@ class drawGame {
         this.scores[player.username] += points;
 
         this.correct_guesses ++;
-        if(this.correct_guesses === this.total_players -1)
+        if(this.correct_guesses === this.total_players -1 - this.disconnects.length)
             this.wordGuessed();
 
         let data={
@@ -247,13 +266,81 @@ class drawGame {
         let text = 'Jeder hat das Wort erraten!';
         let message = {
             text: text,
-            author: "Server"
+            author: "Server",
+            color: 'green',
         };
         this.sockets.emit("getMsg", message);
 
         this.round_over();
     }
 
+    isPainter(player){
+        let i = this.players.indexOf(player);
+        return i === this.current_player;
+    }
+
+
+    undo(player){
+        if(!this.isPainter(player)){
+            player.emit('notAllowed');
+            return
+        }
+
+        let distance = 0;
+        let threshhold = 200;
+
+        while (distance < threshhold && this.lines.length > 0){
+            let line = this.lines.pop();
+            let dx = line.x - line.px;
+            let dy = line.y - line.py;
+            distance += Math.hypot(dx, dy);
+        }
+
+        this.socket.broadcast.emit('deleted');
+        this.socket.broadcast.emit('loaded', this.lines);
+    }
+
+    //draw a line (if user is drawer)
+    paint(line, player){
+            if (this.isPainter(player)) {
+                player.broadcast.emit('mouse', line);
+                this.lines.push(line);
+            }
+            else {
+                player.emit('notAllowed');
+            }
+    }
+
+    delete(player) {
+        if(!this.isPainter(player)){
+            player.emit('notAllowed');
+            return
+        }
+
+        this.lines = [];
+        player.broadcast.emit('deleted');
+    }
+
+    gameOver(){
+        this.done = true;
+        clearInterval(this.countdown);
+        this.sockets.emit("finished");
+        this.stop();
+    }
+
+    stop(){
+        clearInterval(this.countdown);
+        console.log("Game stopped");
+        this.sockets.emit('gameStopped');
+    }
+
+    playerLeave(player){
+        let i = this.players.indexOf(player); //todo: use sess id dict
+        this.disconnects.push(i);
+        console.log(this.players[i].username, "left !");
+        if (i === this.current_player) //todo: replace username with session id (lexik jwt eg)
+            this.round_over();
+    }
 }
 
 module.exports = {

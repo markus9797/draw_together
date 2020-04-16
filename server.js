@@ -21,6 +21,7 @@ let Game = {
     chat: [],
     lines: [],
     host: null,
+    players: [],
     rounds: 5,
     drawer: 0,
     maxTime: 60,
@@ -52,7 +53,7 @@ function newConnection(socket) {
 
     // users.push(socket);
 
-    socket.on('createGame', function(max_time = 100) {
+    socket.on('createGame', function(data) {
         Game.started = true;
         // put player who started on pos 1 (host);
         let i = users.indexOf(socket);
@@ -65,8 +66,9 @@ function newConnection(socket) {
         Game.host = users[0];
         Game.socket = socket;
         Game.sockets = io.sockets;
-        Game.players = users;
-        Game.maxTime = max_time;
+        Game.players = users.slice(0); // copy users into game instance
+        Game.maxTime = data.max_time;
+        Game.rounds = data.rounds;
 
         // set first drawer to the person who started the game (todo: order array new)
         Game.drawer = users.indexOf(socket);
@@ -83,12 +85,16 @@ function newConnection(socket) {
     });
 
     socket.on('stopGame', function(){
-        io.sockets.emit('gameStopped');
-        users = [];
+        if (!checkGame())
+            return false;
+        current_game.stop();
         current_game = null;
+        users = [];
     });
 
     socket.on('pickWord', function(word) {
+        if (!checkGame())
+            return false;
         console.log("current word: ", word.word);
         current_game.wordPicked(word);
         let data = {
@@ -102,8 +108,10 @@ function newConnection(socket) {
 
 
     socket.on('sendMsg', function(message) {
-       current_game.chat.push(message);
-       current_game.guess(users[users.indexOf(socket)], message.text);
+        if (checkGame()) {
+            current_game.chat.push(message);
+            current_game.guess(users[users.indexOf(socket)], message.text);
+        }
     });
 
     socket.on('disconnect', function() {
@@ -114,10 +122,13 @@ function newConnection(socket) {
             console.log('Got disconnect! ', username);
             socket.broadcast.emit('removeUser', username);
         }
+        if (checkGame()) {
+            if (current_game.players.includes(socket)) //todo: replace username with sess id
+                current_game.playerLeave(socket);
+        }
     });
 
     socket.on('join', (data)=>{
-
         users.push(socket);
         console.log('got connect! ', data.username);
         let i = users.indexOf(socket);
@@ -126,7 +137,7 @@ function newConnection(socket) {
     });
 
     socket.on('load', ()=>{
-        if(current_game !== null) {
+        if(checkGame()) {
             socket.emit('loaded', current_game.lines);
             socket.emit('loadedChat', current_game.chat);
             socket.emit('loadedDrawer', users[current_game.current_player].username);
@@ -135,10 +146,9 @@ function newConnection(socket) {
             let data = {
                 rounds: current_game.rounds,
                 max_time:  current_game.maxTime
-
             };
-            socket.emit('loadedSetup', data);
 
+            socket.emit('loadedSetup', data);
             socket.emit('lobby', false);
         }
 
@@ -155,38 +165,29 @@ function newConnection(socket) {
     });
 
     socket.on('delete', ()=>{
-        current_game.lines = [];
-        socket.broadcast.emit('deleted');
+        if (checkGame())
+            current_game.delete(socket);
     });
 
     socket.on('undo', ()=>{
-        let distance = 0;
-        let threshhold = 200;
-
-        while (distance < threshhold && current_game.lines.length > 0){
-            let line = current_game.lines.pop();
-            let dx = line.x - line.px;
-            let dy = line.y - line.py;
-            distance += Math.hypot(dx, dy);
-        }
-
-        socket.broadcast.emit('deleted');
-        socket.broadcast.emit('loaded', current_game.lines);
+        if (checkGame())
+            current_game.undo(socket);
     });
 
 
-    socket.on('mouse', (data)=> {
-        let i = users.indexOf(socket);
-        try {
-            if (i === current_game.current_player) {
-                socket.broadcast.emit('mouse', data);
-                current_game.lines.push(data);
-            }
-            else {
-                socket.emit('notAllowed');
-            }
-        } catch (e) {
-            console.log(e);
-        }
+    socket.on('mouse', (line)=> {
+        if (checkGame())
+            current_game.paint(line, socket);
     });
+}
+
+function checkGame(){ //check if a game is currently active (todo: and available)
+    if (current_game === null)
+        return false;
+    else if (current_game.finished) {
+        current_game = null;
+        return false;
+    }
+    else
+        return true;
 }
