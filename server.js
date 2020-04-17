@@ -169,9 +169,9 @@ function newConnection(socket) {
             current_game.delete(socket);
     });
 
-    socket.on('undo', ()=>{
+    socket.on('undo', (scale)=>{
         if (checkGame())
-            current_game.undo(socket);
+            current_game.undo(socket, scale);
     });
 
 

@@ -281,14 +281,14 @@ class drawGame {
     }
 
 
-    undo(player){
+    undo(player, scale){
         if(!this.isPainter(player)){
             player.emit('notAllowed');
             return
         }
 
         let distance = 0;
-        let threshhold = 200;
+        let threshhold = 200 * scale; // scale = client / server canvas width
 
         while (distance < threshhold && this.lines.length > 0){
             let line = this.lines.pop();
