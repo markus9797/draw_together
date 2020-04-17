@@ -229,6 +229,7 @@ class drawGame {
             author: "Server"
         };
         this.sockets.emit("getMsg", message);
+        player.emit("correctGuess");
 
         let points = this.calcPoints();
         this.scores[player.username] += points;
