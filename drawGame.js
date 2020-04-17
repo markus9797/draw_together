@@ -297,8 +297,8 @@ class drawGame {
             distance += Math.hypot(dx, dy);
         }
 
-        this.socket.broadcast.emit('deleted');
-        this.socket.broadcast.emit('loaded', this.lines);
+        player.broadcast.emit('deleted');
+        player.broadcast.emit('loaded', this.lines);
     }
 
     //draw a line (if user is drawer)
