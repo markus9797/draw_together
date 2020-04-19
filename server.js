@@ -179,6 +179,11 @@ function newConnection(socket) {
         if (checkGame())
             current_game.paint(line, socket);
     });
+
+    socket.on('troll', (data)=> {
+        if (checkGame())
+            current_game.troll(socket, data);
+    });
 }
 
 function checkGame(){ //check if a game is currently active (todo: and available)

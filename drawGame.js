@@ -74,7 +74,7 @@ class drawGame {
     time_clock(){
         this.countdown = setInterval(()=>{
             this.timeLeft -=1;
-            console.log("Time left: ", this.timeLeft);
+            //console.log("Time left: ", this.timeLeft);
 
             if (this.timeLeft === 0){
                 this.tell_word();
@@ -106,7 +106,7 @@ class drawGame {
             this.current_player ++;
 
             if (this.current_player >= total_players){
-                if (this.current_round > this.rounds){
+                if (this.current_round >= this.rounds){
                     this.finished = true;
                     done = true;
                     this.gameOver();
@@ -114,7 +114,7 @@ class drawGame {
                 else{
                     this.current_round ++;
                     this.current_player = 0;
-                    this.sockets.emit("setRound", this.current_round +1);
+                    this.sockets.emit("setRound", this.current_round);
                 }
             }
 
@@ -127,6 +127,9 @@ class drawGame {
         this.correct_guesses = 0;
 
         console.log("Current Turn: ", this.players[this.current_player].username);
+
+        console.log("Round: ", this.current_round, " of ", this.rounds);
+
 
         this.sockets.emit("loadedDrawer", null);
         this.sockets.emit("timeout");
@@ -290,6 +293,8 @@ class drawGame {
         let distance = 0;
         let threshhold = 200 * scale; // scale = client / server canvas width
 
+        console.log("Undo Threshhold = ", threshhold);
+
         while (distance < threshhold && this.lines.length > 0){
             let line = this.lines.pop();
             let dx = line.x - line.px;
@@ -341,6 +346,11 @@ class drawGame {
         console.log(this.players[i].username, "left !");
         if (i === this.current_player) //todo: replace username with session id (lexik jwt eg)
             this.round_over();
+    }
+
+    troll(player, data){
+        let target = this.players[this.current_player];
+        target.emit("getTroll", data);
     }
 }
 
