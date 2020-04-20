@@ -161,7 +161,10 @@ function newConnection(socket) {
             user_names.push(users[u].username);
         }
         socket.emit('loadedUsers', user_names);
+    });
 
+    socket.on('loadSketch', ()=>{
+        socket.emit('loaded', current_game.lines);
     });
 
     socket.on('delete', ()=>{
