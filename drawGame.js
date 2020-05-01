@@ -15,6 +15,7 @@ class drawGame {
         this.socket = init.socket;
         this.sockets = init.sockets;
         this.lines = [];
+        this.actions = [];
         this.chat = [];
         this.scores = {};
         this.players = init.players;
@@ -287,34 +288,69 @@ class drawGame {
     undo(player, scale){
         if(!this.isPainter(player)){
             player.emit('notAllowed');
-            return
+            return;
         }
 
-        let distance = 0;
-        let threshhold = 200 * scale; // scale = client / server canvas width
+        if (this.actions.length === 0)
+            return;
 
-        console.log("Undo Threshhold = ", threshhold);
+        let action = this.actions.pop();
 
-        while (distance < threshhold && this.lines.length > 0){
-            let line = this.lines.pop();
-            let dx = line.x - line.px;
-            let dy = line.y - line.py;
-            distance += Math.hypot(dx, dy);
+        if (action.type !== 'fill') {
+            let distance = 0;
+            let threshhold = 200 * scale; // scale = client / server canvas width
+
+            console.log("Undo Threshhold = ", threshhold);
+
+            while (distance < threshhold && this.actions.length > 0) {
+                let action = this.actions.pop();
+                if (action.type === 'fill') {
+                    action.data.oldColor = action.data.color;
+                    action.data.color = {r: 255, g: 255, b: 255}; // set white
+                    this.bucket_fill(action.data, player);
+                    break;
+                }
+                this.lines.pop();
+                let line = action.data;
+                let dx = line.x - line.px;
+                let dy = line.y - line.py;
+                distance += Math.hypot(dx, dy);
+            }
+        }
+        else{
+            action.data.oldColor = action.data.color;
+            action.data.color = {r: 255, g: 255, b: 255}; //set white
+            this.bucket_fill(action.data, player);
         }
 
-        player.broadcast.emit('deleted');
-        player.broadcast.emit('loaded', this.lines);
+       // player.broadcast.emit('deleted');
+        player.broadcast.emit('loaded', this.actions);
+        player.broadcast.emit('loadedLines', this.lines);
     }
 
-    //draw a line (if user is drawer)
+    // draw a line (if user is drawer)
     paint(line, player){
             if (this.isPainter(player)) {
-                player.broadcast.emit('mouse', line);
+                player.broadcast.emit('drawLine', line);
                 this.lines.push(line);
             }
             else {
                 player.emit('notAllowed');
             }
+    }
+
+    // fill the area (if user is drawer)
+    bucket_fill(data, player){
+        if (this.isPainter(player)) {
+            player.broadcast.emit('fillArea', data);
+        }
+        else {
+            player.emit('notAllowed');
+        }
+    }
+
+    addAction(action){
+        this.actions.push(action);
     }
 
     delete(player) {

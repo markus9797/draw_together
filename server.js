@@ -138,7 +138,8 @@ function newConnection(socket) {
 
     socket.on('load', ()=>{
         if(checkGame()) {
-            socket.emit('loaded', current_game.lines);
+            socket.emit('loadedActions', current_game.actions);
+            socket.emit('loadedLines', current_game.lines); //todo: check network load
             socket.emit('loadedChat', current_game.chat);
             socket.emit('loadedDrawer', users[current_game.current_player].username);
             socket.emit('loadedScores', current_game.scores);
@@ -177,10 +178,15 @@ function newConnection(socket) {
             current_game.undo(socket, scale);
     });
 
-
-    socket.on('mouse', (line)=> {
-        if (checkGame())
-            current_game.paint(line, socket);
+    socket.on('drawAction', (action)=> {
+        console.log(action);
+        if (!checkGame())
+            return;
+        if(action.type === 'fill')
+            current_game.bucket_fill(action.data, socket);
+        else if (action.type === 'line')
+            current_game.paint(action.data, socket);
+        current_game.addAction(action);
     });
 
     socket.on('troll', (data)=> {
