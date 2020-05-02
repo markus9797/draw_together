@@ -129,7 +129,9 @@ function newConnection(socket) {
     });
 
     socket.on('join', (data)=>{
-        users.push(socket);
+        if (!users.includes(socket))
+            users.push(socket);
+
         console.log('got connect! ', data.username);
         let i = users.indexOf(socket);
         users[i].username = data.username;
@@ -200,6 +202,7 @@ function checkGame(){ //check if a game is currently active (todo: and available
         return false;
     else if (current_game.finished) {
         current_game = null;
+        this.users = [];
         return false;
     }
     else

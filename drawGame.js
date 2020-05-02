@@ -214,7 +214,7 @@ class drawGame {
                     text: text,
                     author: name
                 };
-                player.broadcast.emit("getMsg", message);
+                this.sockets.emit("getMsg", message);
             }
 
         } else {
@@ -222,7 +222,7 @@ class drawGame {
                 text: text,
                 author: name
             };
-            player.broadcast.emit("getMsg", message);
+           this.sockets.emit("getMsg", message);
         }
     }
 
@@ -364,15 +364,15 @@ class drawGame {
     }
 
     gameOver(){
-        this.done = true;
+        //this.done = true;
         clearInterval(this.countdown);
         this.sockets.emit("finished");
-        this.stop();
+        setTimeout(()=>this.stop(), 10000);
     }
 
     stop(){
-        clearInterval(this.countdown);
         console.log("Game stopped");
+        this.done = true;
         this.sockets.emit('gameStopped');
     }
 
