@@ -181,7 +181,6 @@ function newConnection(socket) {
     });
 
     socket.on('drawAction', (action)=> {
-        console.log(action);
         if (!checkGame())
             return;
         if(action.type === 'fill')
@@ -202,7 +201,7 @@ function checkGame(){ //check if a game is currently active (todo: and available
         return false;
     else if (current_game.finished) {
         current_game = null;
-        this.users = [];
+        users = [];
         return false;
     }
     else

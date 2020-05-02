@@ -300,7 +300,6 @@ class drawGame {
             let distance = 0;
             let threshhold = 200 * scale; // scale = client / server canvas width
 
-            console.log("Undo Threshhold = ", threshhold);
 
             while (distance < threshhold && this.actions.length > 0) {
                 let action = this.actions.pop();
