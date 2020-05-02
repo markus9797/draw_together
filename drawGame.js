@@ -304,8 +304,9 @@ class drawGame {
             while (distance < threshhold && this.actions.length > 0) {
                 let action = this.actions.pop();
                 if (action.type === 'fill') {
+                    let temp = action.data.oldColor;
                     action.data.oldColor = action.data.color;
-                    action.data.color = {r: 255, g: 255, b: 255}; // set white
+                    action.data.color = temp;
                     this.bucket_fill(action.data, player);
                     break;
                 }
@@ -317,8 +318,9 @@ class drawGame {
             }
         }
         else{
+            let temp = action.data.oldColor;
             action.data.oldColor = action.data.color;
-            action.data.color = {r: 255, g: 255, b: 255}; //set white
+            action.data.color = temp;
             this.bucket_fill(action.data, player);
         }
 
