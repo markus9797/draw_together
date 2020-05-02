@@ -54,6 +54,12 @@ function newConnection(socket) {
     // users.push(socket);
 
     socket.on('createGame', function(data) {
+
+        if(users.length < 2){
+            console.log("Not enough players to start");
+            return;
+        }
+
         Game.started = true;
         // put player who started on pos 1 (host);
         let i = users.indexOf(socket);
