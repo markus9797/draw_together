@@ -366,21 +366,29 @@ class drawGame {
 
     gameOver(){
         //this.done = true;
+        console.log("Game finished");
+
         clearInterval(this.countdown);
         this.sockets.emit("finished");
-        setTimeout(()=>this.stop(), 10000);
+        this.done = true;
     }
 
     stop(){
-        console.log("Game stopped");
-        this.done = true;
+        console.log("Game interrupted");
+
+        clearInterval(this.countdown);
         this.sockets.emit('gameStopped');
+        this.done = true;
     }
 
     playerLeave(player){
         let i = this.players.indexOf(player); //todo: use sess id dict
         this.disconnects.push(i);
         console.log(this.players[i].username, "left !");
+        if (this.disconnects.length === this.players.length) { //everybody left - stop game
+            this.stop();
+            return;
+        }
         if (i === this.current_player) //todo: replace username with session id (lexik jwt eg)
             this.round_over();
     }
