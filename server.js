@@ -141,7 +141,7 @@ function newConnection(socket) {
         console.log('got connect! ', data.username);
         let i = users.indexOf(socket);
         users[i].username = data.username;
-        socket.broadcast.emit('addUser', data.username);
+        io.emit('addUser', data.username);
     });
 
     socket.on('load', ()=>{
