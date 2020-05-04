@@ -149,6 +149,8 @@ function newConnection(socket) {
 
     socket.on('load', ()=>{
         if(checkGame()) {
+            if (users[current_game.current_player] === undefined) //user not in current game
+                return;
             socket.emit('loadedActions', current_game.actions);
             socket.emit('loadedLines', current_game.lines); //todo: check network load
             socket.emit('loadedChat', current_game.chat);
