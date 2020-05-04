@@ -51,9 +51,12 @@ io.sockets.on('connection', newConnection);
 
 function newConnection(socket) {
 
+    const color = '#' + Math.random().toString(16).slice(2, 8).toUpperCase(); // random color for each user (used in lobby)
+
     // users.push(socket);
     socket.on('lobbyDraw', function(data) {
         // lobby_lines.push(data);
+        data.color = color;
         socket.broadcast.emit('lobbyLine', data);
         // todo: clear lobby lines in a effective way (eg. 20% per x sec)
     });
