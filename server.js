@@ -53,7 +53,7 @@ function newConnection(socket) {
 
     // users.push(socket);
     socket.on('lobbyDraw', function(data) {
-        lobby_lines.push(data);
+        // lobby_lines.push(data);
         socket.broadcast.emit('lobbyLine', data);
         // todo: clear lobby lines in a effective way (eg. 20% per x sec)
     });
