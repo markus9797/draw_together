@@ -62,6 +62,8 @@ class drawGame {
             console.log ("LOADED WORDS from db");
             this.wordlist = words;
             con.end();
+            let word_selection = this.wordPicker();
+            this.players[this.current_player].emit('pickWords', word_selection);
         })
     }
 

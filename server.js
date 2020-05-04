@@ -89,10 +89,6 @@ function newConnection(socket) {
 
         //create new game instance
         current_game = new drawGame(Game);
-        let words = current_game.wordPicker();
-
-        socket.emit('pickWords', words);
-        io.sockets.emit('loadedDrawer', users[current_game.current_player].username);
     });
 
     socket.on('stopGame', function(){
