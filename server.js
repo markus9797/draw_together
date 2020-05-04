@@ -11,7 +11,7 @@ const server = app.listen(process.env.PORT || 3000 );  // run server
 const io = socket(server);  // init socket
 
 let users = []; // connected users
-let lines = []; // store the current painting
+let lobby_lines = []; // store the lobby painting
 
 let Chat = [];
 
@@ -52,6 +52,11 @@ io.sockets.on('connection', newConnection);
 function newConnection(socket) {
 
     // users.push(socket);
+    socket.on('lobbyDraw', function(data) {
+        lobby_lines.push(data);
+        socket.broadcast.emit('lobbyLine', data);
+        // todo: clear lobby lines in a effective way (eg. 20% per x sec)
+    });
 
     socket.on('createGame', function(data) {
 
@@ -111,7 +116,6 @@ function newConnection(socket) {
         };
         socket.emit('drawTimer', current_game.maxTime);
     });
-
 
     socket.on('sendMsg', function(message) {
         if (checkGame()) {
