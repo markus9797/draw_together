@@ -124,6 +124,7 @@ function newConnection(socket) {
     });
 
     socket.on('disconnect', function() {
+        socket.emit("gameStopped");
         let i = users.indexOf(socket);
         if (i !== -1) {
             const username = users[i].username;
