@@ -25,7 +25,6 @@ class drawGame {
         this.initWordlist();
         this.countdown = null;
         this.disconnects = [];
-        this.done = false;
     }
 
     loadDB(con, callback){
@@ -237,8 +236,13 @@ class drawGame {
         this.sockets.emit("getMsg", message);
         player.emit("correctGuess");
 
+        // points for the guesser
         let points = this.calcPoints();
         this.scores[player.username] += points;
+
+        // points for the drawer
+        let drawer_factor = 1.2; // drawer gets gx times the average points
+        let drawer_points = (points / this.total_players) * drawer_factor;
 
         this.correct_guesses ++;
         if(this.correct_guesses === this.total_players -1 - this.disconnects.length)
@@ -372,7 +376,7 @@ class drawGame {
 
         clearInterval(this.countdown);
         this.sockets.emit("finished");
-        this.done = true;
+        this.finished = true;
     }
 
     stop(){
@@ -380,7 +384,7 @@ class drawGame {
 
         clearInterval(this.countdown);
         this.sockets.emit('gameStopped');
-        this.done = true;
+        this.finished = true;
     }
 
     playerLeave(player){

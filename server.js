@@ -75,7 +75,7 @@ function newConnection(socket) {
         users[i] = users[0];
         users[0] = temp;
 
-        console.log(users[i].username, "Starting new Game with host: ", users[0].username, " \n Total players: ", users.length);
+        console.log("Starting new Game with host: ", users[0].username, " \n Total players: ", users.length);
 
         Game.host = users[0];
         Game.socket = socket;
