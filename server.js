@@ -178,7 +178,8 @@ function newConnection(socket) {
     });
 
     socket.on('loadSketch', ()=>{
-        socket.emit('loaded', current_game.lines);
+        if (checkGame())
+            socket.emit('loaded', current_game.lines);
     });
 
     socket.on('delete', ()=>{
