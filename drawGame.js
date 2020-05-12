@@ -96,49 +96,51 @@ class drawGame {
 
     round_over(){
         clearInterval(this.countdown);
-
         this.sockets.emit("nextRound");
-        this.lines = []; //clear game lines - important for undo
+        this.lines = []; // clear game lines - important for undo
 
-        let total_players = this.players.length;
+        let round_delay = 2000; // time between each round
 
-        let done = false;
-        do { //skipping d'ced players
-            console.log("Skipping ", this.players[this.current_player].username);
-            this.current_player ++;
+        setTimeout(()=>{
+            let total_players = this.players.length;
+            let done = false;
+            do { //skipping d'ced players
+                console.log("Skipping ", this.players[this.current_player].username);
+                this.current_player ++;
 
-            if (this.current_player >= total_players){
-                if (this.current_round >= this.rounds){
-                    this.finished = true;
-                    done = true;
-                    this.gameOver();
+                if (this.current_player >= total_players){
+                    if (this.current_round >= this.rounds){
+                        this.finished = true;
+                        done = true;
+                        this.gameOver();
+                    }
+                    else{
+                        this.current_round ++;
+                        this.current_player = 0;
+                        this.sockets.emit("setRound", this.current_round);
+                    }
                 }
-                else{
-                    this.current_round ++;
-                    this.current_player = 0;
-                    this.sockets.emit("setRound", this.current_round);
-                }
-            }
 
-        } while (this.disconnects.includes(this.current_player) && !done);
+            } while (this.disconnects.includes(this.current_player) && !done);
 
-        if(done)
-            return 0;
+            if(done)
+                return 0;
 
-        this.timeLeft = this.maxTime;
-        this.correct_guesses = 0;
+            this.timeLeft = this.maxTime;
+            this.correct_guesses = 0;
 
-        console.log("Current Turn: ", this.players[this.current_player].username);
+            console.log("Current Turn: ", this.players[this.current_player].username);
 
-        console.log("Round: ", this.current_round, " of ", this.rounds);
+            console.log("Round: ", this.current_round, " of ", this.rounds);
 
 
-        this.sockets.emit("loadedDrawer", null);
-        this.sockets.emit("timeout");
-        this.sockets.emit("deleted");
+            this.sockets.emit("loadedDrawer", null);
+            this.sockets.emit("timeout");
+            this.sockets.emit("deleted");
 
-        let words = this.wordPicker();
-        this.players[this.current_player].emit('pickWords', words);
+            let words = this.wordPicker();
+            this.players[this.current_player].emit('pickWords', words);
+        }, round_delay)
 
     }
 
@@ -243,7 +245,7 @@ class drawGame {
         // points for the drawer
         let drawer_factor = 1.2; // drawer gets gx times the average points
         let drawer_points = (points / this.total_players) * drawer_factor;
-        this.scores[this.current_player] += drawer_points;
+        this.scores[this.players[this.current_player].username] += drawer_points;
 
         this.correct_guesses ++;
         if(this.correct_guesses === this.total_players -1 - this.disconnects.length)
