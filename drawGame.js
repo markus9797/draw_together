@@ -244,7 +244,7 @@ class drawGame {
 
         // points for the drawer
         let drawer_factor = 1.2; // drawer gets gx times the average points
-        let drawer_points = (points / this.total_players) * drawer_factor;
+        let drawer_points = (points / (this.total_players -1)) * drawer_factor;
         this.scores[this.players[this.current_player].username] += drawer_points;
 
         this.correct_guesses ++;
