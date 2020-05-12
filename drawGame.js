@@ -252,7 +252,8 @@ class drawGame {
         let data={
             player: player.username,
             points: points,
-            drawer_p: drawer_points
+            drawer_p: drawer_points,
+            drawer: this.players[this.current_player].username
         };
 
         this.sockets.emit("addPoints", data);
