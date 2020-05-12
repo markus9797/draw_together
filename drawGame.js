@@ -256,6 +256,8 @@ class drawGame {
             drawer: this.players[this.current_player].username
         };
 
+        console.log("drawer add points: ", this.players[this.current_player].username);
+
         this.sockets.emit("addPoints", data);
     }
 
